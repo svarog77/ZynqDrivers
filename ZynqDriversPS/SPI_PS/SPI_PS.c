@@ -106,10 +106,8 @@ static int SPI_PS_Init(XSpiPs_Config *SpiConfig, u16 SpiDeviceId, XSpiPs *xspiIn
 
     /*Clock Config - Zynq-7000 IO Peripheral Clock - CLK SPI*/
     /* @param 	PS7_SPI_CLK this parameter is set in the Vivado block design. */
-    int freq = PS7_SPI_CLK/ClkPrescale;
-    xil_printf("\033[3;31;47m[SPI%d]PS7 SPI CLK - %dMHz\n\033[0m",SpiDeviceId, PS7_SPI_CLK/1000000U);
+
 	Status = XSpiPs_SetClkPrescaler(xspiInst, ClkPrescale);
-	xil_printf("\033[3;31;47m[SPI%d]SPI CLK - %dMHz\n\033[0m",SpiDeviceId, freq/1000000U);
 	/*
 	 * Set the Rx FIFO Threshold to the Max Data
 	 */
@@ -142,8 +140,7 @@ int SPIM0_Init(SPI_Protocol_t Protocol, SPI_Manual_SS_t Manual_CS, u8 ClkPrescal
 	Xil_AssertNonvoid(ClkPrescale	== XSPIPS_CLK_PRESCALE_4||XSPIPS_CLK_PRESCALE_8||XSPIPS_CLK_PRESCALE_16
 									 ||XSPIPS_CLK_PRESCALE_32||XSPIPS_CLK_PRESCALE_64||XSPIPS_CLK_PRESCALE_128
 									 ||XSPIPS_CLK_PRESCALE_256);
-
-	Status = SPI_PS_Init(Spi_0_Config, SPI0_DEV_ID, p_spi0Inst, Protocol, ClkPrescale, MASTERps, Manual_CS, ManStart);
+		Status = SPI_PS_Init(Spi_0_Config, SPI0_DEV_ID, p_spi0Inst, Protocol, MASTERps ,ClkPrescale , Manual_CS, ManStart);
 	if(Status!= XST_SUCCESS){
 		xil_printf("\033[3;31;47m Error SPI Init! return %d2\n\r\033[0m", Status);
 		return XST_FAILURE;
@@ -211,6 +208,29 @@ int SPIM0_TX(u8 *SendBuffer, int ByteCount){
 	}
    return XST_SUCCESS;
 }
+
+/*****************************************************************************
+ * Function: SPIM0_Transfer()
+ *//**
+ *
+ * @brief		Transfers specified data on the SPI bus in polled mode.
+ * @details     The function controls CS.
+ * @return	    0 = SUCCESS, 1 = FAILURE.
+ *
+ * */
+int SPIM0_Transfer(u8 *SendBufPtr, u8 *RecvBufPtr,u32 ByteCount){
+	int Status;
+    /* Sending  */
+	XSpiPs_SetSlaveSelect(p_spi0Inst, 1);
+	Status = XSpiPs_PolledTransfer(p_spi0Inst, SendBufPtr, RecvBufPtr, ByteCount);
+	XSpiPs_SetSlaveSelect(p_spi0Inst, 1);
+   if (Status != XST_SUCCESS) {
+		xil_printf("\033[3;31;47m[SPIM0_Transfer] Return - FAILURE, Status -%d \n\033[0m",Status);
+		return XST_FAILURE;
+	}
+   return XST_SUCCESS;
+}
+
 /*****************************************************************************
  * Function: SPIM1_Init()
  *//**
@@ -501,6 +521,42 @@ void SPI_Write(uint16_t dev, uint16_t addr, uint8_t data) {
         XSpiPs_PolledTransfer(&spi1, send_data, &dummi, sizeof(send_data));
     }
  */
+}
+
+static unsigned int SpiPsCalculateFreq(uint8_t Prescaler){
+
+	switch(Prescaler){
+			case XSPIPS_CLK_PRESCALE_4:{
+				return PS7_SPI_CLK/4U;
+			}
+				break;
+			case XSPIPS_CLK_PRESCALE_8:{
+				return PS7_SPI_CLK/8U;
+			}
+				break;
+			case XSPIPS_CLK_PRESCALE_16:{
+				return PS7_SPI_CLK/16U;
+			}
+				break;
+			case XSPIPS_CLK_PRESCALE_32:{
+				return PS7_SPI_CLK/32U;
+			}
+				break;
+			case XSPIPS_CLK_PRESCALE_64:{
+				return PS7_SPI_CLK/64U;
+			}
+				break;
+			case XSPIPS_CLK_PRESCALE_128:{
+				return PS7_SPI_CLK/128U;
+			}
+				break;
+			case XSPIPS_CLK_PRESCALE_256:{
+				return PS7_SPI_CLK/256U;
+			}
+				break;
+			default: break;
+	}
+		return 0;
 }
 /****** End functions *****/
 

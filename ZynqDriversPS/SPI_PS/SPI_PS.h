@@ -56,9 +56,10 @@
 /*****************************************************************************/
 typedef enum SPI_PS_PROTOCOL{
 		MODE0 = 0 ,
-		MODE3 = XSPIPS_CLK_ACTIVE_LOW_OPTION |XSPIPS_CLK_PHASE_1_OPTION,
+		MODE1 = XSPIPS_CLK_PHASE_1_OPTION,
 		MODE2 = XSPIPS_CLK_ACTIVE_LOW_OPTION,
-		MODE1 = XSPIPS_CLK_PHASE_1_OPTION
+		MODE3 = XSPIPS_CLK_ACTIVE_LOW_OPTION |XSPIPS_CLK_PHASE_1_OPTION
+
 }SPI_Protocol_t;
 /*The Mode parameter defines the operating mode of the SPI module*/
 typedef enum SPI_PS_MODE{
@@ -88,7 +89,7 @@ int 		SPIM0_Init			(SPI_Protocol_t Protocol, SPI_Manual_SS_t Manual_CS, u8 ClkPr
 int 		SPIS0_Init			(SPI_Protocol_t Protocol, u8 ClkPrescale);
 int 		SPIM0_TX			(u8 *SendBuffer, int ByteCount);
 void 		SPIM0_Send			(u8 *SendBuffer, int ByteCount);
-
+int 		SPIM0_Transfer		(u8 *SendBufPtr, u8 *RecvBufPtr,u32 ByteCount);
 int 		SPIM1_Init			(SPI_Protocol_t Protocol, SPI_Manual_SS_t Manual_CS, u8 ClkPrescale, SPI_Manual_Start_t ManStart);
 int 		SPIS1_Init			(SPI_Protocol_t Protocol, u8 ClkPrescale);
 int 		SPIM1_TX			(u8 *SendBuffer, int ByteCount);
